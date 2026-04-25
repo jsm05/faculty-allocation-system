@@ -19,11 +19,22 @@ and teaching allocations with role-based access control.
 
 ## Login Credentials
 
-| Role   | Email                          | Password  |
-|--------|--------------------------------|-----------|
-| Admin  | admin@goa.bits-pilani.ac.in   | admin123  |
-| Editor | editor@goa.bits-pilani.ac.in  | edit456   |
-| Viewer | viewer@goa.bits-pilani.ac.in  | view789   |
+| Role   | Email                         | Password |
+|--------|-------------------------------|----------|
+| Admin  | admin@goa.bits-pilani.ac.in  | admin123 |
+| Editor | editor@goa.bits-pilani.ac.in | edit456  |
+| Viewer | viewer@goa.bits-pilani.ac.in | view789  |
+
+## Testing
+
+A test plan is included in `test_plan.html` — open it directly in any browser, no server needed.
+
+It covers:
+- Login & role-based access control
+- Faculty, Course, Department, Semester CRUD operations
+- Allocation creation and duplicate/overload trigger validation
+- Smart Suggestion engine output
+- Workload summary and chart rendering
 
 ## Modules
 1. Faculty Management
