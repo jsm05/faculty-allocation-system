@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Test Plan — Faculty Allocation System</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=Outfit:wght@300;400;500&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+:root {
+  --bg: #f4f2ee; --surface: #ffffff; --ink: #1a1814; --ink2: #6b6860; --ink3: #a8a59e;
+  --accent: #2a6ef5; --accent-bg: #eef3ff;
+  --green: #1d6b4e; --green-bg: #e8f6f0;
+  --red: #b84a18; --red-bg: #fdf0ea;
+  --amber: #92600a; --amber-bg: #fef3dc;
+  --purple: #6a3db8; --purple-bg: #f2eeff;
+  --teal: #0f6e56; --teal-bg: #e1f5ee;
+  --border: #e2dfd8; --radius: 10px; --radius-sm: 6px;
+  --ff-h: 'Syne', sans-serif; --ff-b: 'Outfit', sans-serif; --ff-m: 'JetBrains Mono', monospace;
+}
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body { font-family: var(--ff-b); background: var(--bg); color: var(--ink); min-height: 100vh; }
+
+/* ── HEADER ── */
+.doc-header {
+  background: var(--ink); color: #fff;
+  padding: 36px 48px 32px;
+  border-bottom: 3px solid var(--accent);
+}
+.doc-header h1 { font-family: var(--ff-h); font-size: 28px; font-weight: 800; }
+.doc-header p { color: rgba(255,255,255,0.5); font-size: 13px; margin-top: 6px; }
+.header-meta { display: flex; gap: 16px; margin-top: 20px; flex-wrap: wrap; }
+.meta-pill {
+  padding: 5px 14px; border-radius: 20px; font-size: 11px; font-weight: 600;
+  font-family: var(--ff-h); border: 1px solid rgba(255,255,255,0.15);
+  color: rgba(255,255,255,0.7);
+}
+
+/* ── SCOREBOARD ── */
+.scoreboard {
+  background: var(--surface); border-bottom: 1px solid var(--border);
+  padding: 16px 48px; position: sticky; top: 0; z-index: 100;
+  display: flex; align-items: center; gap: 24px; flex-wrap: wrap;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.05);
+}
+.score-item { display: flex; align-items: center; gap: 8px; font-size: 13px; }
+.score-num { font-family: var(--ff-h); font-size: 20px; font-weight: 700; }
+.score-lbl { color: var(--ink2); font-size: 11px; }
+.score-bar-wrap { flex: 1; min-width: 200px; }
+.score-bar-track { height: 6px; background: var(--bg); border-radius: 3px; overflow: hidden; }
+.score-bar-fill { height: 100%; border-radius: 3px; background: var(--green); transition: width 0.4s ease; }
+.score-pct { font-family: var(--ff-h); font-size: 14px; font-weight: 700; color: var(--green); }
+.print-btn {
+  margin-left: auto; padding: 7px 18px;
+  background: var(--ink); color: #fff; border: none; border-radius: var(--radius-sm);
+  font-family: var(--ff-h); font-size: 12px; font-weight: 600; cursor: pointer;
+  transition: background 0.15s;
+}
+.print-btn:hover { background: var(--accent); }
+
+/* ── MAIN LAYOUT ── */
+.main { display: flex; gap: 0; }
+.toc {
+  width: 240px; flex-shrink: 0; background: var(--surface);
+  border-right: 1px solid var(--border); padding: 24px 0;
+  position: sticky; top: 57px; height: calc(100vh - 57px); overflow-y: auto;
+}
+.toc-section { margin-bottom: 4px; }
+.toc-label { font-size: 9px; font-weight: 700; color: var(--ink3); text-transform: uppercase; letter-spacing: 0.1em; padding: 10px 20px 4px; }
+.toc-link {
+  display: flex; align-items: center; gap: 8px;
+  padding: 7px 20px; font-size: 12px; color: var(--ink2);
+  cursor: pointer; border-left: 2px solid transparent; transition: all 0.12s;
+  text-decoration: none;
+}
+.toc-link:hover { background: var(--bg); color: var(--ink); }
+.toc-link.active { color: var(--accent); border-left-color: var(--accent); background: var(--accent-bg); font-weight: 600; }
+.toc-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+/* ── CONTENT ── */
+.content { flex: 1; padding: 32px 48px 64px; overflow-x: hidden; }
+
+/* ── SECTION ── */
+.section { margin-bottom: 48px; scroll-margin-top: 80px; }
+.section-hd {
+  display: flex; align-items: flex-end; justify-content: space-between;
+  padding-bottom: 14px; border-bottom: 2px solid var(--border); margin-bottom: 20px;
+}
+.section-title { font-family: var(--ff-h); font-size: 20px; font-weight: 700; }
+.section-sub { font-size: 12px; color: var(--ink2); margin-top: 4px; }
+.section-badge {
+  padding: 4px 14px; border-radius: 20px; font-size: 11px; font-weight: 700;
+  font-family: var(--ff-h); flex-shrink: 0;
+}
+
+/* ── INTRO CARD ── */
+.intro-card {
+  background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 20px 22px; margin-bottom: 20px;
+}
+.intro-card h3 { font-family: var(--ff-h); font-size: 13px; font-weight: 700; margin-bottom: 10px; color: var(--ink2); text-transform: uppercase; letter-spacing: 0.06em; }
+.creds-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.cred-box {
+  padding: 12px 14px; border-radius: var(--radius-sm); border: 1.5px solid var(--border);
+}
+.cred-role { font-family: var(--ff-h); font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+.cred-line { font-size: 11.5px; color: var(--ink2); margin-bottom: 4px; }
+.cred-line strong { font-family: var(--ff-m); font-size: 11px; color: var(--ink); background: var(--bg); padding: 1px 6px; border-radius: 4px; }
+
+/* ── TEST TABLE ── */
+.test-table { width: 100%; border-collapse: collapse; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); overflow: hidden; margin-bottom: 16px; }
+.test-table thead th {
+  padding: 10px 14px; text-align: left; background: var(--bg);
+  font-size: 9.5px; font-family: var(--ff-h); text-transform: uppercase; letter-spacing: 0.07em;
+  color: var(--ink3); border-bottom: 1px solid var(--border); font-weight: 600;
+}
+.test-table tbody tr { border-bottom: 1px solid var(--border); transition: background 0.1s; }
+.test-table tbody tr:last-child { border-bottom: none; }
+.test-table tbody tr:hover { background: #faf9f7; }
+.test-table td { padding: 11px 14px; font-size: 12.5px; vertical-align: top; }
+
+.tc-id { font-family: var(--ff-m); font-size: 11px; color: var(--ink3); white-space: nowrap; }
+.tc-desc { font-weight: 500; line-height: 1.4; }
+.tc-step { font-size: 11.5px; color: var(--ink2); margin-top: 4px; line-height: 1.5; }
+.tc-step ol { padding-left: 16px; margin-top: 3px; }
+.tc-step li { margin-bottom: 2px; }
+.tc-expect { font-size: 12px; color: var(--ink); line-height: 1.4; }
+.tc-expect .tag { display: inline-block; background: var(--green-bg); color: var(--green); font-size: 10px; font-weight: 600; padding: 1px 7px; border-radius: 4px; margin-bottom: 3px; font-family: var(--ff-h); }
+.tc-expect .tag.block { background: var(--red-bg); color: var(--red); }
+.tc-expect .tag.warn { background: var(--amber-bg); color: var(--amber); }
+
+/* Status toggle */
+.status-cell { width: 90px; text-align: center; }
+.status-toggle {
+  display: inline-flex; flex-direction: column; align-items: center; gap: 4px;
+}
+.status-toggle select {
+  padding: 4px 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font-family: var(--ff-b); font-size: 11px; color: var(--ink);
+  background: var(--surface); cursor: pointer; outline: none; width: 80px;
+  transition: border-color 0.15s;
+}
+.status-toggle select:focus { border-color: var(--accent); }
+
+/* Notes */
+.notes-cell { width: 160px; }
+.tc-note {
+  width: 100%; padding: 6px 8px; border: 1.5px solid var(--border); border-radius: var(--radius-sm);
+  font-family: var(--ff-b); font-size: 11px; color: var(--ink); background: var(--surface);
+  resize: none; outline: none; transition: border-color 0.15s; min-height: 52px;
+}
+.tc-note:focus { border-color: var(--accent); }
+
+/* Row status colors */
+tr.row-pass { background: #f0fdf4 !important; }
+tr.row-fail { background: #fff7f5 !important; }
+tr.row-skip { background: #fffbf0 !important; }
+
+/* ── BADGES ── */
+.badge { display: inline-block; padding: 2px 8px; border-radius: 10px; font-size: 10px; font-weight: 600; font-family: var(--ff-h); }
+.b-admin  { background: var(--red-bg); color: var(--red); }
+.b-editor { background: var(--accent-bg); color: var(--accent); }
+.b-viewer { background: var(--green-bg); color: var(--green); }
+.b-p1 { background: var(--green-bg); color: var(--green); }
+.b-p2 { background: var(--accent-bg); color: var(--accent); }
+.b-p3 { background: var(--amber-bg); color: var(--amber); }
+.b-p4 { background: var(--purple-bg); color: var(--purple); }
+.b-p5 { background: var(--red-bg); color: var(--red); }
+.b-p6 { background: var(--teal-bg); color: var(--teal); }
+.b-p7 { background: var(--purple-bg); color: var(--purple); }
+
+/* ── ALERT ── */
+.alert { padding: 12px 16px; border-radius: var(--radius-sm); font-size: 12.5px; margin-bottom: 16px; border-left: 3px solid; }
+.alert-info { background: var(--accent-bg); color: var(--accent); border-color: var(--accent); }
+.alert-warn { background: var(--amber-bg); color: var(--amber); border-color: var(--amber); }
+
+@media print {
+  .scoreboard, .toc, .print-btn { display: none !important; }
+  .main { display: block; }
+  .content { padding: 16px; }
+  .tc-note, .status-toggle select { border: 1px solid #ccc; }
+}
+</style>
+</head>
+<body>
+
+<div class="doc-header">
+  <h1>Comprehensive Test Plan — Faculty Course Allocation System</h1>
+  <p>DBMS Group Project · BITS Pilani Goa Campus · HTML/PHP/MySQL Stack</p>
+  <div class="header-meta">
+    <span class="meta-pill">Part A — Role Privilege Testing (3 Roles)</span>
+    <span class="meta-pill">19 Test Cases Total</span>
+  </div>
+</div>
+
+<!-- STICKY SCOREBOARD -->
+<div class="scoreboard">
+  <div class="score-item">
+    <div>
+      <div class="score-num" id="sc-pass" style="color:var(--green)">0</div>
+      <div class="score-lbl">PASSED</div>
+    </div>
+  </div>
+  <div class="score-item">
+    <div>
+      <div class="score-num" id="sc-fail" style="color:var(--red)">0</div>
+      <div class="score-lbl">FAILED</div>
+    </div>
+  </div>
+  <div class="score-item">
+    <div>
+      <div class="score-num" id="sc-skip" style="color:var(--amber)">0</div>
+      <div class="score-lbl">SKIPPED</div>
+    </div>
+  </div>
+  <div class="score-item">
+    <div>
+      <div class="score-num" id="sc-pend" style="color:var(--ink3)">19</div>
+      <div class="score-lbl">PENDING</div>
+    </div>
+  </div>
+  <div class="score-bar-wrap">
+    <div style="display:flex;justify-content:space-between;margin-bottom:5px">
+      <span style="font-size:11px;color:var(--ink2)">Overall Progress</span>
+      <span class="score-pct" id="sc-pct">0%</span>
+    </div>
+    <div class="score-bar-track"><div class="score-bar-fill" id="sc-bar" style="width:0%"></div></div>
+  </div>
+  <button class="print-btn" onclick="window.print()">⎙ Print Report</button>
+</div>
+
+<div class="main">
+
+<!-- TABLE OF CONTENTS -->
+<nav class="toc">
+  <div class="toc-section">
+    <div class="toc-label">Part A — Roles</div>
+    <a class="toc-link" href="#s-auth">
+      <span class="toc-dot" style="background:#b84a18"></span> Authentication
+    </a>
+    <a class="toc-link" href="#s-viewer">
+      <span class="toc-dot" style="background:#1d6b4e"></span> Viewer Privileges
+    </a>
+    <a class="toc-link" href="#s-editor">
+      <span class="toc-dot" style="background:#2a6ef5"></span> Editor Privileges
+    </a>
+    <a class="toc-link" href="#s-admin">
+      <span class="toc-dot" style="background:#b84a18"></span> Admin Privileges
+    </a>
+  </div>
+
+</nav>
+
+<div class="content">
+
+<!-- ══════════════════════════════════════════════════════
+     PRE-TEST SETUP
+══════════════════════════════════════════════════════ -->
+<div class="section" id="s-setup">
+  <div class="intro-card">
+    <h3>Pre-Test Setup Checklist</h3>
+    <div class="alert alert-warn" style="margin-bottom:14px">⚠ Complete all steps below before running any tests.</div>
+    <ol style="padding-left:18px;font-size:13px;line-height:2;color:var(--ink2)">
+      <li>XAMPP is running — both <strong style="color:var(--ink)">Apache</strong> and <strong style="color:var(--ink)">MySQL</strong> show green in the control panel</li>
+      <li><strong style="color:var(--ink)">faculty_allocation_system.sql</strong> has been run in phpMyAdmin or MySQL Workbench (creates DB + 3 MySQL users)</li>
+      <li>All 4 files are in <strong style="color:var(--ink)">C:\xampp\htdocs\faculty\</strong>: <code style="font-family:var(--ff-m);font-size:11px;background:var(--bg);padding:1px 5px;border-radius:3px">login.php</code>, <code style="font-family:var(--ff-m);font-size:11px;background:var(--bg);padding:1px 5px;border-radius:3px">faculty_allocation_system.php</code>, <code style="font-family:var(--ff-m);font-size:11px;background:var(--bg);padding:1px 5px;border-radius:3px">api.php</code>, <code style="font-family:var(--ff-m);font-size:11px;background:var(--bg);padding:1px 5px;border-radius:3px">logout.php</code></li>
+      <li>Open browser at <strong style="color:var(--accent)">http://localhost/faculty/login.php</strong></li>
+      <li>Open browser DevTools (F12) → Network tab to monitor API calls during tests</li>
+    </ol>
+    <div style="margin-top:16px">
+      <h3 style="margin-bottom:10px">Test Credentials</h3>
+      <div class="creds-grid">
+        <div class="cred-box" style="border-color:#f5c6b0">
+          <div class="cred-role" style="color:var(--red)">⚙ Admin</div>
+          <div class="cred-line">Email: <strong>admin@goa.bits-pilani.ac.in</strong></div>
+          <div class="cred-line">Pass: <strong>admin123</strong></div>
+          <div class="cred-line">DB user: <strong>admin_dba</strong></div>
+        </div>
+        <div class="cred-box" style="border-color:#bfd4fb">
+          <div class="cred-role" style="color:var(--accent)">✏ Editor</div>
+          <div class="cred-line">Email: <strong>editor@goa.bits-pilani.ac.in</strong></div>
+          <div class="cred-line">Pass: <strong>edit456</strong></div>
+          <div class="cred-line">DB user: <strong>editor_user</strong></div>
+        </div>
+        <div class="cred-box" style="border-color:#a8d9c4">
+          <div class="cred-role" style="color:var(--green)">👁 Viewer</div>
+          <div class="cred-line">Email: <strong>viewer@goa.bits-pilani.ac.in</strong></div>
+          <div class="cred-line">Pass: <strong>view789</strong></div>
+          <div class="cred-line">DB user: <strong>viewer_user</strong></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     PART A — AUTHENTICATION
+══════════════════════════════════════════════════════ -->
+<div class="section" id="s-auth">
+  <div class="section-hd">
+    <div>
+      <div class="section-title">A1 — Authentication & Access Control</div>
+      <div class="section-sub">Login page validation, domain restriction, session handling</div>
+    </div>
+    <span class="section-badge" style="background:var(--ink);color:#fff">ALL ROLES</span>
+  </div>
+
+  <table class="test-table">
+    <thead>
+      <tr>
+        <th>Test ID</th><th>Description & Steps</th><th>Expected Result</th><th style="text-align:center">Status</th><th>Notes</th>
+      </tr>
+    </thead>
+    <tbody>
+
+      <tr id="tr-A1-01">
+        <td class="tc-id">A1-01</td>
+        <td>
+          <div class="tc-desc">Non-BITS domain blocked at login</div>
+          <div class="tc-step"><ol><li>Go to login.php</li><li>Enter <code style="font-family:var(--ff-m);font-size:10px">test@gmail.com</code> / any password</li><li>Click Sign In</li></ol></div>
+        </td>
+        <td class="tc-expect">
+          <div class="tag block">BLOCKED</div><br/>
+          Error: "Access restricted to BITS Pilani email addresses only." Page stays on login.
+        </td>
+        <td class="status-cell"><div class="status-toggle"><select onchange="updateStatus(this,'A1-01')"><option value="pending">— Pending</option><option value="pass">✓ Pass</option><option value="fail">✗ Fail</option><option value="skip">⊘ Skip</option></select></div></td>
+        <td class="notes-cell"><textarea class="tc-note" placeholder="Notes…"></textarea></td>
+      </tr>
+
+      <tr id="tr-A1-02">
+        <td class="tc-id">A1-02</td>
+        <td>
+          <div class="tc-desc">Wrong password rejected</div>
+          <div class="tc-step"><ol><li>Enter <code style="font-family:var(--ff-m);font-size:10px">admin@goa.bits-pilani.ac.in</code></li><li>Enter <code style="font-family:var(--ff-m);font-size:10px">wrongpass</code></li><li>Click Sign In</li></ol></div>
+        </td>
+        <td class="tc-expect">
+          <div class="tag block">REJECTED</div><br/>
+          Error: "Incorrect password." Page stays on login, email field pre-filled.
+        </td>
+        <td class="status-cell"><div class="status-toggle"><select onchange="updateStatus(this,'A1-02')"><option value="pending">— Pending</option><option value="pass">✓ Pass</option><option value="fail">✗ Fail</option><option value="skip">⊘ Skip</option></select></div></td>
+        <td class="notes-cell"><textarea class="tc-note" placeholder="Notes…"></textarea></td>
+      </tr>
+
+      <tr id="tr-A1-03">
+        <td class="tc-id">A1-03</td>
+        <td>
+          <div class="tc-desc">Empty form submission blocked</div>
+          <div class="tc-step"><ol><li>Leave both fields empty</li><li>Click Sign In</li></ol></div>
+        </td>
+        <td class="tc-expect">
+          <div class="tag block">BLOCKED</div><br/>
+          Browser HTML5 validation fires (required attribute). No server request made.
+        </td>
+        <td class="status-cell"><div class="status-toggle"><select onchange="updateStatus(this,'A1-03')"><option value="pending">— Pending</option><option value="pass">✓ Pass</option><option value="fail">✗ Fail</option><option value="skip">⊘ Skip</option></select></div></td>
+        <td class="notes-cell"><textarea class="tc-note" placeholder="Notes…"></textarea></td>
+      </tr>
+
+      <tr id="tr-A1-04">
+        <td class="tc-id">A1-04</td>
+        <td>
+          <div class="tc-desc">Direct URL access without login redirects</div>
+          <div class="tc-step"><ol><li>Make sure you're logged out</li><li>Directly navigate to <code style="font-family:var(--ff-m);font-size:10px">http://localhost/faculty/faculty_allocation_system.php</code></li></ol></div>
+        </td>
+        <td class="tc-expect">
+          <div class="tag block">REDIRECTED</div><br/>
+          Browser redirects to login.php. Dashboard is never shown.
+        </td>
+        <td class="status-cell"><div class="status-toggle"><select onchange="updateStatus(this,'A1-04')"><option value="pending">— Pending</option><option value="pass">✓ Pass</option><option value="fail">✗ Fail</option><option value="skip">⊘ Skip</option></select></div></td>
+        <td class="notes-cell"><textarea class="tc-note" placeholder="Notes…"></textarea></td>
+      </tr>
+
+      <tr id="tr-A1-05">
+        <td class="tc-id">A1-05</td>
+        <td>
+          <div class="tc-desc">Direct API call without session is blocked</div>
+          <div class="tc-step"><ol><li>Log out first</li><li>Open new tab, visit <code style="font-family:var(--ff-m);font-size:10px">http://localhost/faculty/api.php?action=get_faculty</code></li></ol></div>
+        </td>
+        <td class="tc-expect">
+          <div class="tag block">BLOCKED</div><br/>
+          Returns JSON: <code style="font-family:var(--ff-m);font-size:10px">{"status":"error","message":"Unauthorized..."}</code>
+        </td>
+        <td class="status-cell"><div class="status-toggle"><select onchange="updateStatus(this,'A1-05')"><option value="pending">— Pending</option><option value="pass">✓ Pass</option><option value="fail">✗ Fail</option><option value="skip">⊘ Skip</option></select></div></td>
+        <td class="notes-cell"><textarea class="tc-note" placeholder="Notes…"></textarea></td>
+      </tr>
+
+      <tr id="tr-A1-06">
+        <td class="tc-id">A1-06</td>
+        <td>
+          <div class="tc-desc">Sign Out destroys session</div>
+          <div class="tc-step"><ol><li>Log in as any user</li><li>Click "Sign Out"</li><li>Press browser Back button</li></ol></div>
+        </td>
+        <td class="tc-expect">
+          <div class="tag block">SESSION DESTROYED</div><br/>
+          Back button returns to login.php, not the dashboard. Session is gone.
+        </td>
+        <td class="status-cell"><div class="status-toggle"><select onchange="updateStatus(this,'A1-06')"><option value="pending">— Pending</option><option value="pass">✓ Pass</option><option value="fail">✗ Fail</option><option value="skip">⊘ Skip</option></select></div></td>
+        <td class="notes-cell"><textarea class="tc-note" placeholder="Notes…"></textarea></td>
+      </tr>
+
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     PART A — VIEWER
+══════════════════════════════════════════════════════ -->
+<div class="section" id="s-viewer">
+  <div class="section-hd">
+    <div>
+      <div class="section-title">A2 — Viewer Privileges</div>
+      <div class="section-sub">SELECT only — all write operations must be blocked</div>
+    </div>
+    <span class="section-badge b-viewer">VIEWER ROLE</span>
+  </div>
+  <div class="alert alert-info">Login as <strong>viewer@goa.bits-pilani.ac.in</strong> / <strong>view789</strong> for all tests in this section.</div>
+
+  <table class="test-table" style="table-layout:fixed">
+    <colgroup>
+      <col style="width:70px"/>
+      <col style="width:auto"/>
+      <col style="width:280px"/>
+      <col style="width:110px"/>
+      <col style="width:160px"/>
+    </colgroup>
+    <thead><tr><th>Test ID</th><th>Description & Steps</th><th>Expected Result</th><th style="text-align:center">Status</th><th>Notes</th></tr></thead>
+    <tbody>
+
+      <tr id="tr-A2-01">
+        <td class="tc-id">A2-01</td>
+        <td>
+          <div class="tc-desc">Viewer badge shown correctly</div>
+          <div class="tc-step"><ol><li>Log in as Viewer</li><li>Check the top-right header badge</li></ol></div>
+        </td>
+        <td class="tc-expect"><div class="tag">VISIBLE</div><br/>Badge shows "👁 Viewer — Read Only" in green. User name + email visible in header.</td>
+        <td class="status-cell"><div class="status-toggle"><select onchange="updateStatus(this,'A2-01')"><option value="pending">— Pending</option><option value="pass">✓ Pass</option><option value="fail">✗ Fail</option><option value="skip">⊘ Skip</option></select></div></td>
+        <td class="notes-cell"><textarea class="tc-note" placeholder="Notes…"></textarea></td>
+      </tr>
+
+      <tr id="tr-A2-02">
+        <td class="tc-id">A2-02</td>
+        <td>
+          <div class="tc-desc">All data loads and is readable</div>
+          <div class="tc-step"><ol><li>Navigate through all 7 module pages</li><li>Verify tables and charts populate</li></ol></div>
+        </td>
+        <td class="tc-expect"><div class="tag">READABLE</div><br/>Faculty, Courses, Allocations, Workload, Reports all display correctly. All records visible and tables populate without errors.</td>
+        <td class="status-cell"><div class="status-toggle"><select onchange="updateStatus(this,'A2-02')"><option value="pending">— Pending</option><option value="pass">✓ Pass</option><option value="fail">✗ Fail</option><option value="skip">⊘ Skip</option></select></div></td>
+        <td class="notes-cell"><textarea class="tc-note" placeholder="Notes…"></textarea></td>
+      </tr>
+
+      <tr id="tr-A2-03">
+        <td class="tc-id">A2-03</td>
+        <td>
+          <div class="tc-desc">Add Faculty form is hidden</div>
+          <div class="tc-step"><ol><li>Go to P1 — Faculty Info</li><li>Scroll down past the Faculty Directory table</li></ol></div>
+        </td>
+        <td class="tc-expect"><div class="tag block">HIDDEN</div><br/>No "Add Faculty" form visible. Instead shows: "🔒 Viewer access: You can view faculty records but cannot add or modify them."</td>
+        <td class="status-cell"><div class="status-toggle"><select onchange="updateStatus(this,'A2-03')"><option value="pending">— Pending</option><option value="pass">✓ Pass</option><option value="fail">✗ Fail</option><option value="skip">⊘ Skip</option></select></div></td>
+        <td class="notes-cell"><textarea class="tc-note" placeholder="Notes…"></textarea></td>
+      </tr>
+
+      <tr id="tr-A2-04">
+        <td class="tc-id">A2-04</td>
+        <td>
+          <div class="tc-desc">Add Course form is hidden</div>
+          <div class="tc-step"><ol><li>Go to P2 — Courses</li><li>Scroll past the course grid</li></ol></div>
+        </td>
+        <td class="tc-expect"><div class="tag block">HIDDEN</div><br/>No "Add Course" form. Shows viewer-locked notice instead.</td>
+        <td class="status-cell"><div class="status-toggle"><select onchange="updateStatus(this,'A2-04')"><option value="pending">— Pending</option><option value="pass">✓ Pass</option><option value="fail">✗ Fail</option><option value="skip">⊘ Skip</option></select></div></td>
+        <td class="notes-cell"><textarea class="tc-note" placeholder="Notes…"></textarea></td>
+      </tr>
+
+      <tr id="tr-A2-05">
+        <td class="tc-id">A2-05</td>
+        <td>
+          <div class="tc-desc">New Allocation form is hidden</div>
+          <div class="tc-step"><ol><li>Go to P4 — Allocation</li><li>Look for "New Allocation" form</li></ol></div>
+        </td>
+        <td class="tc-expect"><div class="tag block">HIDDEN</div><br/>No allocation form or Smart Allocation button. Shows viewer-locked notice.</td>
+        <td class="status-cell"><div class="status-toggle"><select onchange="updateStatus(this,'A2-05')"><option value="pending">— Pending</option><option value="pass">✓ Pass</option><option value="fail">✗ Fail</option><option value="skip">⊘ Skip</option></select></div></td>
+        <td class="notes-cell"><textarea class="tc-note" placeholder="Notes…"></textarea></td>
+      </tr>
+
+      <tr id="tr-A2-06">
+        <td class="tc-id">A2-06</td>
+        <td>
+          <div class="tc-desc">Delete buttons hidden in Allocation table</div>
+          <div class="tc-step"><ol><li>Go to P4 — Current Allocations table</li><li>Check the Action column</li></ol></div>
+        </td>
+        <td class="tc-expect"><div class="tag block">HIDDEN</div><br/>No "Delete" buttons visible in the allocation rows for viewer. Action column is empty or absent.</td>
+        <td class="status-cell"><div class="status-toggle"><select onchange="updateStatus(this,'A2-06')"><option value="pending">— Pending</option><option value="pass">✓ Pass</option><option value="fail">✗ Fail</option><option value="skip">⊘ Skip</option></select></div></td>
+        <td class="notes-cell"><textarea class="tc-note" placeholder="Notes…"></textarea></td>
+      </tr>
+
+      <tr id="tr-A2-07">
+        <td class="tc-id">A2-07</td>
+        <td>
+          <div class="tc-desc">API insert blocked even if called directly (bypass attempt)</div>
+          <div class="tc-step"><ol><li>While logged in as Viewer</li><li>Open DevTools console and run:<br/><code style="font-family:var(--ff-m);font-size:10px">fetch('http://localhost/faculty/api.php?action=add_faculty',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({faculty_name:'Hack',email:'hack@x.com',designation:'Lecturer',max_workload:10,dept_id:1})})</code></li><li>Check response</li></ol></div>
+        </td>
+        <td class="tc-expect"><div class="tag block">BLOCKED</div><br/>API returns <code style="font-family:var(--ff-m);font-size:10px">{"status":"error","message":"Permission denied..."}</code>. No record created in DB.</td>
+        <td class="status-cell"><div class="status-toggle"><select onchange="updateStatus(this,'A2-07')"><option value="pending">— Pending</option><option value="pass">✓ Pass</option><option value="fail">✗ Fail</option><option value="skip">⊘ Skip</option></select></div></td>
+        <td class="notes-cell"><textarea class="tc-note" placeholder="Notes…"></textarea></td>
+      </tr>
+
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     PART A — EDITOR
+══════════════════════════════════════════════════════ -->
+<div class="section" id="s-editor">
+  <div class="section-hd">
+    <div>
+      <div class="section-title">A3 — Editor Privileges</div>
+      <div class="section-sub">SELECT + INSERT + UPDATE — DELETE must still be blocked</div>
+    </div>
+    <span class="section-badge b-editor">EDITOR ROLE</span>
+  </div>
+  <div class="alert alert-info">Login as <strong>editor@goa.bits-pilani.ac.in</strong> / <strong>edit456</strong> for all tests in this section.</div>
+
+  <table class="test-table">
+    <thead><tr><th>Test ID</th><th>Description & Steps</th><th>Expected Result</th><th style="text-align:center">Status</th><th>Notes</th></tr></thead>
+    <tbody>
+
+      <tr id="tr-A3-01">
+        <td class="tc-id">A3-01</td>
+        <td>
+          <div class="tc-desc">Editor badge shown correctly</div>
+          <div class="tc-step"><ol><li>Log in as Editor</li><li>Check header badge</li></ol></div>
+        </td>
+        <td class="tc-expect"><div class="tag">VISIBLE</div><br/>Badge shows "✏ Editor — Insert & Update" in blue.</td>
+        <td class="status-cell"><div class="status-toggle"><select onchange="updateStatus(this,'A3-01')"><option value="pending">— Pending</option><option value="pass">✓ Pass</option><option value="fail">✗ Fail</option><option value="skip">⊘ Skip</option></select></div></td>
+        <td class="notes-cell"><textarea class="tc-note" placeholder="Notes…"></textarea></td>
+      </tr>
+
+      <tr id="tr-A3-02">
+        <td class="tc-id">A3-02</td>
+        <td>
+          <div class="tc-desc">Add Faculty form IS visible and works</div>
+          <div class="tc-step"><ol><li>Go to P1 — Faculty Info</li><li>Fill in: Name "Test Editor", Email "testeditor@college.edu", Designation "Lecturer", Dept "Computer Science", Workload "10"</li><li>Click Insert Faculty Record</li></ol></div>
+        </td>
+        <td class="tc-expect"><div class="tag">ALLOWED</div><br/>Form is visible. Alert: "✅ Faculty added successfully!" Faculty appears in the table.</td>
+        <td class="status-cell"><div class="status-toggle"><select onchange="updateStatus(this,'A3-02')"><option value="pending">— Pending</option><option value="pass">✓ Pass</option><option value="fail">✗ Fail</option><option value="skip">⊘ Skip</option></select></div></td>
+        <td class="notes-cell"><textarea class="tc-note" placeholder="Notes…"></textarea></td>
+      </tr>
+
+      <tr id="tr-A3-03">
+        <td class="tc-id">A3-03</td>
+        <td>
+          <div class="tc-desc">Delete allocation button is hidden for Editor</div>
+          <div class="tc-step"><ol><li>Go to P4 — Allocation</li><li>Check the Current Allocations table, Action column</li></ol></div>
+        </td>
+        <td class="tc-expect"><div class="tag block">HIDDEN</div><br/>Delete buttons not visible. Editor can view all allocations but cannot remove them.</td>
+        <td class="status-cell"><div class="status-toggle"><select onchange="updateStatus(this,'A3-03')"><option value="pending">— Pending</option><option value="pass">✓ Pass</option><option value="fail">✗ Fail</option><option value="skip">⊘ Skip</option></select></div></td>
+        <td class="notes-cell"><textarea class="tc-note" placeholder="Notes…"></textarea></td>
+      </tr>
+
+      <tr id="tr-A3-04">
+        <td class="tc-id">A3-04</td>
+        <td>
+          <div class="tc-desc">API delete blocked for Editor (bypass attempt)</div>
+          <div class="tc-step"><ol><li>While logged in as Editor</li><li>In console: <code style="font-family:var(--ff-m);font-size:10px">fetch('http://localhost/faculty/api.php?action=delete_allocation',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({allocation_id:1})})</code></li></ol></div>
+        </td>
+        <td class="tc-expect"><div class="tag block">BLOCKED</div><br/>Returns <code style="font-family:var(--ff-m);font-size:10px">{"status":"error","message":"Permission denied: only admin can delete."}</code>. Allocation ID 1 still exists in DB.</td>
+        <td class="status-cell"><div class="status-toggle"><select onchange="updateStatus(this,'A3-04')"><option value="pending">— Pending</option><option value="pass">✓ Pass</option><option value="fail">✗ Fail</option><option value="skip">⊘ Skip</option></select></div></td>
+        <td class="notes-cell"><textarea class="tc-note" placeholder="Notes…"></textarea></td>
+      </tr>
+
+      <tr id="tr-A3-05">
+        <td class="tc-id">A3-05</td>
+        <td>
+          <div class="tc-desc">Editor can create allocation</div>
+          <div class="tc-step"><ol><li>Go to P4 — New Allocation</li><li>Select any faculty + unallocated course + semester</li><li>Enter hours and click Create Allocation</li></ol></div>
+        </td>
+        <td class="tc-expect"><div class="tag">ALLOWED</div><br/>Alert: "Allocation created successfully!" New row appears in the allocations table.</td>
+        <td class="status-cell"><div class="status-toggle"><select onchange="updateStatus(this,'A3-05')"><option value="pending">— Pending</option><option value="pass">✓ Pass</option><option value="fail">✗ Fail</option><option value="skip">⊘ Skip</option></select></div></td>
+        <td class="notes-cell"><textarea class="tc-note" placeholder="Notes…"></textarea></td>
+      </tr>
+
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     PART A — ADMIN
+══════════════════════════════════════════════════════ -->
+<div class="section" id="s-admin">
+  <div class="section-hd">
+    <div>
+      <div class="section-title">A4 — Admin Privileges</div>
+      <div class="section-sub">Full access — SELECT, INSERT, UPDATE, DELETE, DDL</div>
+    </div>
+    <span class="section-badge b-admin">ADMIN ROLE</span>
+  </div>
+  <div class="alert alert-info">Login as <strong>admin@goa.bits-pilani.ac.in</strong> / <strong>admin123</strong> for all tests in this section.</div>
+
+  <table class="test-table">
+    <thead><tr><th>Test ID</th><th>Description & Steps</th><th>Expected Result</th><th style="text-align:center">Status</th><th>Notes</th></tr></thead>
+    <tbody>
+
+      <tr id="tr-A4-01">
+        <td class="tc-id">A4-01</td>
+        <td>
+          <div class="tc-desc">Admin badge shown correctly</div>
+          <div class="tc-step"><ol><li>Log in as Admin</li><li>Check header badge</li></ol></div>
+        </td>
+        <td class="tc-expect"><div class="tag">VISIBLE</div><br/>Badge shows "⚙ Admin — Full Access" in red/orange.</td>
+        <td class="status-cell"><div class="status-toggle"><select onchange="updateStatus(this,'A4-01')"><option value="pending">— Pending</option><option value="pass">✓ Pass</option><option value="fail">✗ Fail</option><option value="skip">⊘ Skip</option></select></div></td>
+        <td class="notes-cell"><textarea class="tc-note" placeholder="Notes…"></textarea></td>
+      </tr>
+
+      <tr id="tr-A4-02">
+        <td class="tc-id">A4-02</td>
+        <td>
+          <div class="tc-desc">All forms and buttons are visible</div>
+          <div class="tc-step"><ol><li>Navigate all 7 module pages</li><li>Check for Add forms and Delete buttons</li></ol></div>
+        </td>
+        <td class="tc-expect"><div class="tag">ALL VISIBLE</div><br/>Add Faculty, Add Course, Add Dept, Add Semester, New Allocation, Delete buttons — all present with no locked notices.</td>
+        <td class="status-cell"><div class="status-toggle"><select onchange="updateStatus(this,'A4-02')"><option value="pending">— Pending</option><option value="pass">✓ Pass</option><option value="fail">✗ Fail</option><option value="skip">⊘ Skip</option></select></div></td>
+        <td class="notes-cell"><textarea class="tc-note" placeholder="Notes…"></textarea></td>
+      </tr>
+
+      <tr id="tr-A4-03">
+        <td class="tc-id">A4-03</td>
+        <td>
+          <div class="tc-desc">Admin can delete an allocation</div>
+          <div class="tc-step"><ol><li>Go to P4 — Current Allocations</li><li>Click Delete on any row</li><li>Confirm the dialog</li></ol></div>
+        </td>
+        <td class="tc-expect"><div class="tag">DELETED</div><br/>Row disappears from the table. Total allocation count decreases by 1.</td>
+        <td class="status-cell"><div class="status-toggle"><select onchange="updateStatus(this,'A4-03')"><option value="pending">— Pending</option><option value="pass">✓ Pass</option><option value="fail">✗ Fail</option><option value="skip">⊘ Skip</option></select></div></td>
+        <td class="notes-cell"><textarea class="tc-note" placeholder="Notes…"></textarea></td>
+      </tr>
+
+    </tbody>
+  </table>
+</div>
+
+
+</div><!-- /content -->
+</div><!-- /main -->
+
+<script>
+const TOTAL = 19;
+let counts = { pass: 0, fail: 0, skip: 0, pending: TOTAL };
+
+function updateStatus(sel, id) {
+  const row = document.getElementById('tr-' + id);
+  const val = sel.value;
+
+  // Remove all state classes
+  row.classList.remove('row-pass', 'row-fail', 'row-skip');
+
+  if (val === 'pass')  row.classList.add('row-pass');
+  if (val === 'fail')  row.classList.add('row-fail');
+  if (val === 'skip')  row.classList.add('row-skip');
+
+  // Recount all selects
+  const all = document.querySelectorAll('.status-toggle select');
+  counts = { pass: 0, fail: 0, skip: 0, pending: 0 };
+  all.forEach(s => {
+    if (s.value === 'pass')    counts.pass++;
+    else if (s.value === 'fail')  counts.fail++;
+    else if (s.value === 'skip')  counts.skip++;
+    else                          counts.pending++;
+  });
+
+  document.getElementById('sc-pass').textContent  = counts.pass;
+  document.getElementById('sc-fail').textContent  = counts.fail;
+  document.getElementById('sc-skip').textContent  = counts.skip;
+  document.getElementById('sc-pend').textContent  = counts.pending;
+
+  const done    = counts.pass + counts.fail + counts.skip;
+  const pct     = Math.round(done / TOTAL * 100);
+  const passPct = Math.round(counts.pass / TOTAL * 100);
+
+  document.getElementById('sc-pct').textContent      = pct + '%';
+  document.getElementById('sc-bar').style.width       = passPct + '%';
+
+  // Bar color changes based on fail count
+  const bar = document.getElementById('sc-bar');
+  if (counts.fail > 3)       bar.style.background = 'var(--red)';
+  else if (counts.fail > 0)  bar.style.background = 'var(--amber)';
+  else                       bar.style.background = 'var(--green)';
+}
+
+// Smooth scroll for TOC
+document.querySelectorAll('.toc-link').forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    const target = document.querySelector(link.getAttribute('href'));
+    if (target) target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    document.querySelectorAll('.toc-link').forEach(l => l.classList.remove('active'));
+    link.classList.add('active');
+  });
+});
+
+// IntersectionObserver to highlight active TOC item
+const sections = document.querySelectorAll('.section[id]');
+const observer = new IntersectionObserver(entries => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting) {
+      const id = entry.target.getAttribute('id');
+      document.querySelectorAll('.toc-link').forEach(l => {
+        l.classList.toggle('active', l.getAttribute('href') === '#' + id);
+      });
+    }
+  });
+}, { rootMargin: '-60px 0px -60% 0px', threshold: 0 });
+
+sections.forEach(s => observer.observe(s));
+</script>
+</body>
+</html>
