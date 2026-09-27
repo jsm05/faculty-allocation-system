@@ -27,7 +27,7 @@ and teaching allocations with role-based access control.
 
 ## Testing
 
-A test plan is included in `test_plan.html` — open it directly in any browser, no server needed.
+A test plan is included in `test_plan.html`. Open it directly in any browser, no server needed.
 
 It covers:
 - Login & role-based access control
