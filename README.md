@@ -1,5 +1,5 @@
 # Faculty Course Allocation System
-**DBMS Group Project — BITS Pilani, Goa Campus | 2025–26**
+**DBMS Group Project - BITS Pilani, Goa Campus | 2025–26**
 
 A web-based system to manage faculty, courses, departments, semesters,
 and teaching allocations with role-based access control.
